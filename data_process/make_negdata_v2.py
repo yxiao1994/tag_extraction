@@ -38,16 +38,16 @@ if __name__ == '__main__':
     print('read data...')
 
     # 正样本训练集
-    df = pd.read_csv(path + 'clean_positive_data.csv', encoding='utf-8', engine='python')
+    df = pd.read_csv(path + 'positive_data.csv', encoding='utf-8', engine='python')
 
     # docid对应的关键词集合
     corpus_tag_dic = defaultdict(list)
-    for word, doc_id in df[['word', 'doc_id']].values:
-        corpus_tag_dic[doc_id].append(word)
+    for word, docid in df[['word', 'docid']].values:
+        corpus_tag_dic[docid].append(word)
 
     pos_tag = list(df['word'])
 
-    df = df[['title', 'content', 'doc_id']]
+    df = df[['title', 'content', 'docid']]
     df = df.drop_duplicates()
     df = df.reset_index(drop=True)
     df = df.dropna()
@@ -57,23 +57,24 @@ if __name__ == '__main__':
         'word': [],
         'content': [],
         'label': [],
-        'doc_id': []
+        'docid': []
     }
     print('generate negative samples...')
-    for title, content, doc_id in tqdm(df[['title', 'content', 'doc_id']].values):
+    for title, content, docid in tqdm(df[['title', 'content', 'docid']].values):
         word_set = set(content.split('|||') + title.split('|||'))
-        sample_neg = random.sample(pos_tag, 2)
+        sample_neg = random.sample(pos_tag, 1)
 
         # 抽取在关键词集合中但是不在文本的词语作为负样本
         for word in sample_neg:
             # 候选关键词筛选
-            if (word not in word_set) and (is_neg_word(word, corpus_tag_dic[doc_id], embedding_index)):
+            if (word not in word_set) and (is_neg_word(word, corpus_tag_dic[docid], embedding_index)):
                 dic['title'].append(title)
                 dic['word'].append(word)
                 dic['content'].append(content)
                 dic['label'].append(0)
-                dic['doc_id'].append(doc_id)
+                dic['docid'].append(docid)
 
     neg_data = pd.DataFrame(dic)
     neg_data = neg_data.drop_duplicates()
     neg_data.to_csv(path + 'neg_data_p2.csv', encoding='utf-8', index=False)
+
