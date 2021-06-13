@@ -1,3 +1,4 @@
+# 通过tfidf最大且在标题中这个规则扩充正样本
 import pandas as pd
 from collections import Counter
 import pickle
